@@ -11,6 +11,10 @@ spring:
       path: "/h2"
   profiles:
     include: null
+  data:
+    mongodb:
+      uri: mongodb+srv://@logiflow.ejlg4zj.mongodb.net/logiflow?appName=logiflow
+      database: logiflow
 management:
   endpoints:
     web:
