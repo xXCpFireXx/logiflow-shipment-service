@@ -13,7 +13,7 @@ spring:
     include: null
   data:
     mongodb:
-      uri: mongodb+srv://@logiflow.ejlg4zj.mongodb.net/logiflow?appName=logiflow
+      uri: ${MONGO_DB_URI}
       database: logiflow
 management:
   endpoints:

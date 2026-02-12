@@ -2,6 +2,7 @@ package co.com.bancolombia.api;
 
 import co.com.bancolombia.api.dto.ShipmentRequest;
 import co.com.bancolombia.api.mapper.ShipmentRestMapper;
+import co.com.bancolombia.usecase.changeshipmentstatus.ChangeShipmentStatusUseCase;
 import co.com.bancolombia.usecase.createshipment.CreateShipmentUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
@@ -19,15 +20,20 @@ public class ShipmentHandler {
     private final ShipmentRestMapper mapper;
 
     public Mono<ServerResponse> createShipment(ServerRequest request) {
-        return request.bodyToMono(ShipmentRequest.class) // 1. Convertir JSON a DTO Java
-                .map(mapper::toDomain)                   // 2. DTO -> Dominio (Aquí se ignoran los mocks)
-                .flatMap(CreateUseCase::createShipment)        // 3. Dominio genera IDs, Mocks y guarda en BD
-                .map(mapper::toResponse)                 // 4. Dominio -> Response (Aquí se construye el JSON 'details')
-                .flatMap(response -> ServerResponse
-                        .created(URI.create("/shipments/" + response.id())) // 201 Created
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(response));
+        return request.bodyToMono(ShipmentRequest.class) // 1. Convertir JSON a DTO Request
+                .map(mapper::toDomain)                   // 2. DTO -> Dominio
+                .flatMap(CreateUseCase::createShipment)  // 3. Ejecutar caso de uso (Devuelve Mono<Shipment>)
+                .flatMap(shipment -> ServerResponse
+                        .created(URI.create("/shipments/" + shipment.getId()))
+                        .build());
     }
+
+//    public Mono<ServerResponse> updateStatusShipment(ServerRequest request) {
+//        return request.bodyToMono(ShipmentRequest.class)
+//                .map(mapper::toDomain)
+//                .flatMap(ChangeShipmentStatusUseCase::changeShipmentStatus)
+//                .flatMap(shipment-> ServerResponse.ok().build());
+//    }
 
 //    // --- 2. CONSULTAR POR ID (GET) ---
 //    public Mono<ServerResponse> getShipmentById(ServerRequest request) {

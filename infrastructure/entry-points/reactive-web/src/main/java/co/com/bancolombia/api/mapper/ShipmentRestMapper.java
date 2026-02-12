@@ -2,6 +2,7 @@ package co.com.bancolombia.api.mapper;
 
 import co.com.bancolombia.api.dto.ShipmentRequest;
 import co.com.bancolombia.api.dto.ShipmentResponse;
+import co.com.bancolombia.model.shipment.Location;
 import co.com.bancolombia.model.shipment.Shipment;
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -19,6 +20,7 @@ public interface ShipmentRestMapper {
     @Mapping(target = "customer", source = "customerId")
     Shipment toDomain(ShipmentRequest request);
 
+    // DOMINIO -> RESPONSE
     @Mapping(target = "id", source = "id")
     @Mapping(target = "cargoDetails", source = "cargo")
     @Mapping(target = "details", source = "shipment", qualifiedByName = "buildUiDetails")
@@ -28,12 +30,18 @@ public interface ShipmentRestMapper {
     @Named("buildUiDetails")
     default ShipmentResponse.UiDetailsResponse buildUiDetails(Shipment s) {
         if (s == null) return null;
+
         return new ShipmentResponse.UiDetailsResponse(
-                new ShipmentResponse.UiItem("Origin", s.getOrigin(), s.getOriginTerminal()),
-                new ShipmentResponse.UiItem("Destination", s.getDestination(), s.getDestinationTerminal()),
+                new ShipmentResponse.UiItem("Origin", formatLocation(s.getOrigin()), s.getOriginTerminal()),
+                new ShipmentResponse.UiItem("Destination", formatLocation(s.getDestination()), s.getDestinationTerminal()),
                 new ShipmentResponse.UiItem("Carrier", s.getCarrierName(), s.getCarrierService()),
                 new ShipmentResponse.UiItem("Weight", s.getCargo().getWeight() + " kg", s.getCargo().getQuantity())
         );
+    }
+
+    default String formatLocation(Location loc) {
+        if (loc == null) return "";
+        return loc.getCity() + ", " + loc.getCountry();
     }
 
     default List<ShipmentResponse.DocumentResponse> mockDocuments() {

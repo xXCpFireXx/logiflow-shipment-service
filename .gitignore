@@ -337,3 +337,4 @@ build-cache
 
 applications/app-service/.env
 .env.*
+.env

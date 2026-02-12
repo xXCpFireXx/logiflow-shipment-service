@@ -11,9 +11,9 @@ public class Shipment {
     private final String id;
     private final String trackingNumber;
     private final LocalDate eta;
-    private final String origin;
+    private final Location origin;
     private final String originTerminal;
-    private final String destination;
+    private final Location destination;
     private final String destinationTerminal;
     private final String customer;
     private final String carrierName;
@@ -21,7 +21,7 @@ public class Shipment {
     private ShipmentStatus status;
     private final CargoDetail cargo;
 
-    public Shipment(String id, String origin, String destination, String customer, CargoDetail cargoIncoming) {
+    public Shipment(String id, Location origin, Location destination, String customer, CargoDetail cargoIncoming) {
         if (id == null || id.length() < 4) {
             throw new IllegalArgumentException("The ID is invalid for generating a tracking number");
         }
@@ -40,10 +40,10 @@ public class Shipment {
         String[] carrierData = MockDataGenerator.getRandomCarrier();
         this.carrierName = carrierData[0];
         this.carrierService = carrierData[1];
-        this.status = ShipmentStatus.IN_TRANSIT;
+        this.status = ShipmentStatus.CREATED;
     }
 
-    public Shipment(String id, String trackingNumber, LocalDate eta, String origin, String originTerminal, String destination, String destinationTerminal, String customer, String carrierName, String carrierService, ShipmentStatus status, CargoDetail cargo) {
+    public Shipment(String id, String trackingNumber, LocalDate eta, Location origin, String originTerminal, Location destination, String destinationTerminal, String customer, String carrierName, String carrierService, ShipmentStatus status, CargoDetail cargo) {
         this.id = id;
         this.trackingNumber = trackingNumber;
         this.eta = eta;
@@ -70,6 +70,13 @@ public class Shipment {
             throw new IllegalStateException("Delivered shipment cannot have incidents");
         }
         this.status = ShipmentStatus.INCIDENT;
+    }
+
+    public void startTransit(){
+        if (status == ShipmentStatus.DELIVERED) {
+            throw new IllegalStateException("Delivered shipment cannot have incidents");
+        }
+        this.status = ShipmentStatus.IN_TRANSIT;
     }
 }
 

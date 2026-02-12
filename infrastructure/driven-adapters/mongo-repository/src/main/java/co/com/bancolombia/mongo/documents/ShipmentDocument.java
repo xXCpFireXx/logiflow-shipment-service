@@ -18,8 +18,8 @@ public class ShipmentDocument {
     private String id;
     private String trackingNumber;
     private LocalDate eta;
-    private String origin;
-    private String destination;
+    private LocationDocument origin;
+    private LocationDocument destination;
     private String customer;
     private String status;
     private String originTerminal;
