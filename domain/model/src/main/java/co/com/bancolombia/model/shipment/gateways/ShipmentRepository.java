@@ -8,5 +8,4 @@ public interface ShipmentRepository {
     Mono<Shipment> save(Shipment shipment);
     Mono<Shipment> findById(String id);
     Mono<PageResult<Shipment>> findAll(int page, int size);
-
 }
