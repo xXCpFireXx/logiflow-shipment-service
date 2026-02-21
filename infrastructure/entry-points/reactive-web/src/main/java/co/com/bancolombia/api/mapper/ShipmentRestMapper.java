@@ -2,6 +2,7 @@ package co.com.bancolombia.api.mapper;
 
 import co.com.bancolombia.api.dto.ShipmentRequest;
 import co.com.bancolombia.api.dto.ShipmentResponse;
+import co.com.bancolombia.api.dto.ShipmentSummaryResponse;
 import co.com.bancolombia.model.shipment.Location;
 import co.com.bancolombia.model.shipment.Shipment;
 import org.mapstruct.Mapper;
@@ -26,6 +27,10 @@ public interface ShipmentRestMapper {
     @Mapping(target = "details", source = "shipment", qualifiedByName = "buildUiDetails")
     @Mapping(target = "documents", expression = "java(mockDocuments())")
     ShipmentResponse toResponse(Shipment shipment);
+
+    @Mapping(target = "id", source = "id")
+    @Mapping(source = "trackingNumber", target = "trackingId")
+    ShipmentSummaryResponse toSummaryResponse(Shipment shipment);
 
     @Named("buildUiDetails")
     default ShipmentResponse.UiDetailsResponse buildUiDetails(Shipment s) {
