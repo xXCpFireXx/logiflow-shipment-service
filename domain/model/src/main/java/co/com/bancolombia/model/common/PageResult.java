@@ -8,8 +8,9 @@ import java.util.List;
 @Data
 @Builder
 public class PageResult<T> {
-    private List<T> content;
-    private long totalElements;
+    private List<T> data;
+    private long total;
+    private int page;
+    private int size;
     private int totalPages;
-    private int currentPage;
 }
