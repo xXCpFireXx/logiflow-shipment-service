@@ -16,6 +16,6 @@ public class ShipmentRouter {
     public RouterFunction<ServerResponse> routerFunction(ShipmentHandler handler) {
         return route(POST("/shipments").and(accept(MediaType.APPLICATION_JSON)), handler::createShipment)
                 .andRoute(GET("/shipments/{id}"), handler::getShipmentById)
-                .andRoute(GET("/shipments"), handler::getAllShipments);
+                .andRoute(GET("/shipments"), handler::getAll);
     }
 }

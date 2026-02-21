@@ -1,7 +1,9 @@
 package co.com.bancolombia.api;
 
 import co.com.bancolombia.api.dto.ShipmentRequest;
+import co.com.bancolombia.api.dto.ShipmentSummaryResponse;
 import co.com.bancolombia.api.mapper.ShipmentRestMapper;
+import co.com.bancolombia.model.common.PageResult;
 import co.com.bancolombia.usecase.changeshipmentstatus.ChangeShipmentStatusUseCase;
 import co.com.bancolombia.usecase.createshipment.CreateShipmentUseCase;
 import co.com.bancolombia.usecase.getshipment.GetshipmentUseCase;
@@ -13,6 +15,7 @@ import org.springframework.web.reactive.function.server.ServerResponse;
 import reactor.core.publisher.Mono;
 
 import java.net.URI;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
@@ -48,13 +51,29 @@ public class ShipmentHandler {
     }
 //
 //    // --- 3. CONSULTAR TODOS PAGINADO (GET) ---
-    public Mono<ServerResponse> getAllShipments(ServerRequest request) {
-        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
-        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+public Mono<ServerResponse> getAll(ServerRequest request) {
+    int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+    int size = Integer.parseInt(request.queryParam("size").orElse("10"));
 
-        return getShipmentUseCase.getAllShipments(page, size)
-                .flatMap(pageResult -> ServerResponse.ok()
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .bodyValue(pageResult));
-    }
+    return getShipmentUseCase.getAllShipments(page, size)
+            .map(pageResult -> {
+                // 1. Convertimos la lista de Shipment a ShipmentSummaryResponse
+                List<ShipmentSummaryResponse> summaries = pageResult.getData().stream()
+                        .map(mapper::toSummaryResponse) // Usamos el nuevo método del mapper
+                        .toList();
+
+                // 2. Reconstruimos el PageResult pero ahora con el tipo ShipmentSummaryResponse
+                return PageResult.<ShipmentSummaryResponse>builder()
+                        .data(summaries)
+                        .total(pageResult.getTotal())
+                        .page(pageResult.getPage())
+                        .size(pageResult.getSize())
+                        .totalPages(pageResult.getTotalPages())
+                        .build();
+            })
+            // 3. Devolvemos la respuesta al cliente
+            .flatMap(mappedPage -> ServerResponse.ok()
+                    .contentType(MediaType.APPLICATION_JSON)
+                    .bodyValue(mappedPage));
+}
 }
