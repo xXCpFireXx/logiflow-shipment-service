@@ -4,6 +4,7 @@ import co.com.bancolombia.api.dto.ShipmentRequest;
 import co.com.bancolombia.api.mapper.ShipmentRestMapper;
 import co.com.bancolombia.usecase.changeshipmentstatus.ChangeShipmentStatusUseCase;
 import co.com.bancolombia.usecase.createshipment.CreateShipmentUseCase;
+import co.com.bancolombia.usecase.getshipment.GetshipmentUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -17,6 +18,7 @@ import java.net.URI;
 @RequiredArgsConstructor
 public class ShipmentHandler {
     private final CreateShipmentUseCase CreateUseCase;
+    private final GetshipmentUseCase getShipmentUseCase;
     private final ShipmentRestMapper mapper;
 
     public Mono<ServerResponse> createShipment(ServerRequest request) {
@@ -35,31 +37,24 @@ public class ShipmentHandler {
 //                .flatMap(shipment-> ServerResponse.ok().build());
 //    }
 
-//    // --- 2. CONSULTAR POR ID (GET) ---
-//    public Mono<ServerResponse> getShipmentById(ServerRequest request) {
-//        String id = request.pathVariable("id");
-//
-//        return useCase.findById(id)                      // 1. Busca en BD (Trae los datos mockeados guardados)
-//                .map(mapper::toResponse)                 // 2. Construye el JSON 'details' visual para el front
-//                .flatMap(response -> ServerResponse.ok()
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .bodyValue(response))
-//                // Manejo básico de error 404 si es vacío
-//                .switchIfEmpty(ServerResponse.notFound().build());
-//    }
+    public Mono<ServerResponse> getShipmentById(ServerRequest request) {
+        String id = request.pathVariable("id");
+        return getShipmentUseCase.getShipmentById(id)
+                .map(mapper::toResponse)
+                .flatMap(response -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(response))
+                .switchIfEmpty(ServerResponse.notFound().build());
+    }
 //
 //    // --- 3. CONSULTAR TODOS PAGINADO (GET) ---
-//    public Mono<ServerResponse> getAllShipments(ServerRequest request) {
-//        // Leemos query params: ?page=0&size=10
-//        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
-//        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
-//
-//        return useCase.getAllShipments(page, size)
-//                // OJO: Aquí tu UseCase devuelve PageResult<Shipment>
-//                // Podrías mapear el contenido de la página a Response si quisieras
-//                // .map(pageResult -> ... convertir lista interna ...)
-//                .flatMap(pageResult -> ServerResponse.ok()
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .bodyValue(pageResult));
-//    }
+    public Mono<ServerResponse> getAllShipments(ServerRequest request) {
+        int page = Integer.parseInt(request.queryParam("page").orElse("0"));
+        int size = Integer.parseInt(request.queryParam("size").orElse("10"));
+
+        return getShipmentUseCase.getAllShipments(page, size)
+                .flatMap(pageResult -> ServerResponse.ok()
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .bodyValue(pageResult));
+    }
 }
