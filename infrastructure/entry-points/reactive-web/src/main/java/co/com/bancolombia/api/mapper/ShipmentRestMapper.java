@@ -23,7 +23,7 @@ public interface ShipmentRestMapper {
 
     // DOMINIO -> RESPONSE
     @Mapping(target = "id", source = "id")
-    @Mapping(target = "cargoDetails", source = "cargo")
+    @Mapping(target = "cargo", source = "cargo")
     @Mapping(target = "details", source = "shipment", qualifiedByName = "buildUiDetails")
     @Mapping(target = "documents", expression = "java(mockDocuments())")
     ShipmentResponse toResponse(Shipment shipment);

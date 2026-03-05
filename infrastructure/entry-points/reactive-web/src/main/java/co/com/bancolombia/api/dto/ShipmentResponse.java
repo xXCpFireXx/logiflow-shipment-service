@@ -15,11 +15,20 @@ public record ShipmentResponse(
         String status,
 
         UiDetailsResponse details,
-        CargoDetailResponse cargoDetails,
+        CargoDetailResponse cargo,
         List<DocumentResponse> documents
 ) {
     public record UiDetailsResponse(UiItem origin, UiItem destination, UiItem carrier, UiItem weight) {}
     public record UiItem(String label, String value, String subtext) {}
-    public record CargoDetailResponse(String packageType, String quantity, String dimensions, String commodity) {}
+    public record CargoDetailResponse(
+            String packageType,
+            String quantity,
+            String dimensions,
+            String volume,
+            String commodity,
+            Boolean stackable,
+            String hsCode,
+            Double weight
+    ) {}
     public record DocumentResponse(String name, String format, String size) {}
 }
