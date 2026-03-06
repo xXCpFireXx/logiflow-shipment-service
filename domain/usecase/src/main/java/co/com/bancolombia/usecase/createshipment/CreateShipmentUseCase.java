@@ -35,7 +35,7 @@ public class CreateShipmentUseCase {
                 // 2. Ejecutamos cuando se guarda exitosamente
                 .flatMap(savedShipment -> {
 
-                    String originCity = (savedShipment.getOrigin() != null) ? savedShipment.getOrigin().getCity() : "Ciudad Desconocida";
+                    String originCity = (savedShipment.getOrigin() != null) ? savedShipment.getOrigin().getCity() : "Unknown city.";
                     String originCountry = (savedShipment.getOrigin() != null) ? savedShipment.getOrigin().getCountry() : "XX";
 
                     // 3. Buscamos las coordenadas llamando a nuestro Gateway
@@ -48,7 +48,7 @@ public class CreateShipmentUseCase {
                                 TrackingEvent event = TrackingEvent.builder()
                                         .shipmentId(savedShipment.getId())
                                         .status("CREATED")
-                                        .description("Envío registrado en origen: " + originCity)
+                                        .description("Shipment registered at origin: " + originCity + ".")
                                         .city(originCity)
                                         .countryCode(originCountry)
                                         .latitude(coords.getLatitude())   // <-- Usamos la Latitud real
@@ -59,7 +59,7 @@ public class CreateShipmentUseCase {
                                 return trackingEventGateway.sendTrackingEvent(event);
                             })
                             .onErrorResume(error -> {
-                                System.err.println("Fallo al enviar evento a Tracking: " + error.getMessage());
+                                System.err.println("Failed to send event to tracking: " + error.getMessage());
                                 return Mono.empty();
                             })
                             .thenReturn(savedShipment);
