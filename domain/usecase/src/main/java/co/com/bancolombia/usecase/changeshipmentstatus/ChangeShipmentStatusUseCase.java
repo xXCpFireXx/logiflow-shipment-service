@@ -16,6 +16,8 @@ public class ChangeShipmentStatusUseCase {
                 .map(shipment -> {
                     switch (newStatus) {
                         case IN_TRANSIT -> shipment.startTransit();
+                        case AT_WAREHOUSE -> shipment.arriveAtWarehouse();
+                        case OUT_FOR_DELIVERY -> shipment.outForDelivery();
                         case DELIVERED -> shipment.deliver();
                         case INCIDENT -> shipment.markIncident();
                         default -> {throw new IllegalArgumentException("Invalid ShipmentStatus!");}
