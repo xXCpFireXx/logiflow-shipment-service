@@ -78,6 +78,26 @@ public class Shipment {
         }
         this.status = ShipmentStatus.IN_TRANSIT;
     }
+
+    public void arriveAtWarehouse() {
+        if (status != ShipmentStatus.IN_TRANSIT) {
+            throw new IllegalStateException("Only shipments IN_TRANSIT can arrive at warehouse");
+        }
+        this.status = ShipmentStatus.AT_WAREHOUSE;
+    }
+
+    public void outForDelivery() {
+        if (status != ShipmentStatus.AT_WAREHOUSE && status != ShipmentStatus.IN_TRANSIT) {
+            throw new IllegalStateException("Shipment must be AT_WAREHOUSE or IN_TRANSIT to go out for delivery");
+        }
+        this.status = ShipmentStatus.OUT_FOR_DELIVERY;
+    }
+
+    public void syncStatus(ShipmentStatus newStatus) {
+        if (newStatus != null) {
+            this.status = newStatus;
+        }
+    }
 }
 
 

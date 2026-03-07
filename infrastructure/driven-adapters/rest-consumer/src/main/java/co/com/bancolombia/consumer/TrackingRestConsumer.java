@@ -1,6 +1,7 @@
 package co.com.bancolombia.consumer;
 
 import co.com.bancolombia.model.trackingEvent.TrackingEvent;
+import co.com.bancolombia.model.trackingEvent.TrackingStatusResponse;
 import co.com.bancolombia.model.trackingEvent.gateways.TrackingEventGateway;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -19,5 +20,14 @@ public class TrackingRestConsumer implements TrackingEventGateway {
                 .bodyValue(trackingEvent) // Spring convierte automáticamente el objeto a JSON
                 .retrieve()
                 .bodyToMono(Void.class);
+    }
+
+    @Override
+    public Mono<TrackingStatusResponse> getCurrentTrackingStatus(String shipmentId) {
+        return client.get()
+                .uri("/tracking/shipments/{shipmentId}/current", shipmentId) // Llamamos a Tracking
+                .retrieve()
+                .bodyToMono(TrackingStatusResponse.class)
+                .onErrorResume(e -> Mono.empty()); // Si tracking falla o no lo encuentra, ignoramos
     }
 }

@@ -1,12 +1,15 @@
 package co.com.bancolombia.api;
 
+import co.com.bancolombia.api.dto.ChangeStatusRequest;
 import co.com.bancolombia.api.dto.ShipmentRequest;
 import co.com.bancolombia.api.dto.ShipmentSummaryResponse;
 import co.com.bancolombia.api.mapper.ShipmentRestMapper;
 import co.com.bancolombia.model.common.PageResult;
+import co.com.bancolombia.model.shipment.ShipmentStatus;
 import co.com.bancolombia.usecase.changeshipmentstatus.ChangeShipmentStatusUseCase;
 import co.com.bancolombia.usecase.createshipment.CreateShipmentUseCase;
 import co.com.bancolombia.usecase.getshipment.GetshipmentUseCase;
+import co.com.bancolombia.usecase.syncshipments.SyncShipmentsUseCase;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Component;
@@ -16,12 +19,15 @@ import reactor.core.publisher.Mono;
 
 import java.net.URI;
 import java.util.List;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class ShipmentHandler {
     private final CreateShipmentUseCase CreateUseCase;
     private final GetshipmentUseCase getShipmentUseCase;
+    private final ChangeShipmentStatusUseCase changeShipmentStatusUseCase;
+    private final SyncShipmentsUseCase syncShipmentsUseCase;
     private final ShipmentRestMapper mapper;
 
     public Mono<ServerResponse> createShipment(ServerRequest request) {
@@ -32,13 +38,6 @@ public class ShipmentHandler {
                         .created(URI.create("/shipments/" + shipment.getId()))
                         .build());
     }
-
-//    public Mono<ServerResponse> updateStatusShipment(ServerRequest request) {
-//        return request.bodyToMono(ShipmentRequest.class)
-//                .map(mapper::toDomain)
-//                .flatMap(ChangeShipmentStatusUseCase::changeShipmentStatus)
-//                .flatMap(shipment-> ServerResponse.ok().build());
-//    }
 
     public Mono<ServerResponse> getShipmentById(ServerRequest request) {
         String id = request.pathVariable("id");
@@ -76,4 +75,30 @@ public Mono<ServerResponse> getAll(ServerRequest request) {
                     .contentType(MediaType.APPLICATION_JSON)
                     .bodyValue(mappedPage));
 }
+
+    public Mono<ServerResponse> changeStatus(ServerRequest request) {
+        String id = request.pathVariable("id");
+
+        return request.bodyToMono(ChangeStatusRequest.class)
+                .switchIfEmpty(Mono.error(new IllegalArgumentException("El body de la petición es requerido")))
+                .flatMap(body -> {
+                    ShipmentStatus newStatus = ShipmentStatus.valueOf(body.status().toUpperCase());
+                    return changeShipmentStatusUseCase.changeShipmentStatus(id, newStatus);
+                })
+                .flatMap(shipment -> ServerResponse.noContent().build())
+
+                // Manejo de errores
+                .onErrorResume(IllegalArgumentException.class, e ->
+                        ServerResponse.badRequest().bodyValue(e.getMessage()))
+                .onErrorResume(IllegalStateException.class, e ->
+                        ServerResponse.badRequest().bodyValue(e.getMessage()));
+    }
+
+    public Mono<ServerResponse> syncShipments(ServerRequest request) {
+        return syncShipmentsUseCase.syncAllShipments()
+                .collectList() // Recolectamos todos los modificados en una lista
+                .flatMap(updatedList -> ServerResponse.ok().bodyValue(
+                        Map.of("message", "Sync complete", "updatedCount", updatedList.size())
+                ));
+    }
 }
